@@ -1,48 +1,54 @@
 package com.primefootball.timelineservice.services
 
+import com.google.gson.Gson
+import com.primefootball.timelineservice.messaging.MessagingConfig
 import com.primefootball.timelineservice.models.Post
 import com.primefootball.timelineservice.models.Timeline
 import com.primefootball.timelineservice.repositories.TimelineRepository
+import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Service
 import java.time.Duration
 import java.time.temporal.ChronoUnit
-import java.time.temporal.TemporalUnit
-import java.util.concurrent.TimeUnit
 
 
 @Service
 class TimelineService(
     private val timelineRepository: TimelineRepository,
-    private val redisTemplate: RedisTemplate<String, String>
+    private val redisTemplate: RedisTemplate<String, String>,
+    private val rabbitTemplate: RabbitTemplate
 ) {
+    var gson = Gson()
 
     fun getTimeline(requesterId: String): Timeline {
-        // Refresh inactivity period or add to active users list
+        val userIsActive = redisTemplate.hasKey(requesterId)
         setActivity(requesterId)
 
-        return if(redisTemplate.hasKey(requesterId)){
-            // return the timeline that belong to this user
-            timelineRepository.findById(requesterId).get()
-        } else {
-            // fetch timeline from post-service and return it
-            messageBrokerStuff()
-            Timeline("", emptyList())
-        }
+        return if (userIsActive) timelineRepository.findById(requesterId).orElse(Timeline(requesterId, emptyList()))
+        else requestTimeline(requesterId)
     }
 
-    private fun setActivity(userId: String){
-        redisTemplate.opsForValue().set(userId, "", Duration.of(1, ChronoUnit.MINUTES));
+    private fun setActivity(userId: String) {
+        redisTemplate.opsForValue().set(userId, userId, Duration.of(10, ChronoUnit.SECONDS))
+    }
+
+    fun requestTimeline(requesterId: String): Timeline {
+        val response = rabbitTemplate.convertSendAndReceive(
+            MessagingConfig.EXCHANGE,
+            MessagingConfig.SENDER_ROUTING_KEY,
+            requesterId
+        )
+
+        val json = gson.fromJson(response.toString(), Array<Post>::class.java)
+        var listOfPosts = emptyList<Post>()
+        json.map { post -> listOfPosts += post }
+
+        return Timeline(requesterId, listOfPosts)
     }
 
     private fun refreshCache() {
         // Every X seconds, do
-        messageBrokerStuff()
+//        messageBrokerStuff()
     }
-
-    private fun messageBrokerStuff(){
-        // HTTP call to post-service through message broker to find all the post from the users in that list
-        // Replace current timeline (if it exists) with new list
-    }
-//
 }
+

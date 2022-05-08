@@ -1,6 +1,7 @@
 package com.primefootball.timelineservice.controllers
 
 import com.primefootball.timelineservice.models.Post
+import com.primefootball.timelineservice.models.Timeline
 import com.primefootball.timelineservice.services.TimelineService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -12,11 +13,11 @@ class TimelineController(private val timelineService: TimelineService) {
 
     @GetMapping("/test")
     fun test(){
-        timelineService.refreshCache()
+        timelineService.requestTimeline("1")
     }
 
     @GetMapping("/{requesterId}")
-    fun getTimeline(@PathVariable requesterId: String): ResponseEntity<List<Post>>{
-        return ResponseEntity<List<Post>>(timelineService.getTimeline(requesterId), HttpStatus.OK)
+    fun getTimeline(@PathVariable requesterId: String): ResponseEntity<Timeline>{
+        return ResponseEntity<Timeline>(timelineService.getTimeline(requesterId), HttpStatus.OK)
     }
 }

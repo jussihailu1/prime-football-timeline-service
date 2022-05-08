@@ -1,7 +1,5 @@
 package com.primefootball.timelineservice.models
 
-import org.springframework.data.redis.core.RedisHash
-
 open class Post(
     open var id: String,
     open var text: String,
