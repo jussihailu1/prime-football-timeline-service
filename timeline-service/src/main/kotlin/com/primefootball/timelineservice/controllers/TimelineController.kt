@@ -11,13 +11,13 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("api/v1/timeline")
 class TimelineController(private val timelineService: TimelineService) {
 
-    @GetMapping("/test")
-    fun test(){
-        timelineService.requestTimeline("1")
-    }
-
     @GetMapping("/{requesterId}")
     fun getTimeline(@PathVariable requesterId: String): ResponseEntity<Timeline>{
-        return ResponseEntity<Timeline>(timelineService.getTimeline(requesterId), HttpStatus.OK)
+        return ResponseEntity.ok(timelineService.getTimeline(requesterId))
+    }
+
+    @GetMapping("/{requesterId}/latest")
+    fun getLatestTimeline(@PathVariable requesterId: String): ResponseEntity<Timeline>{
+        return ResponseEntity.ok(timelineService.getLatestTimeline(requesterId))
     }
 }

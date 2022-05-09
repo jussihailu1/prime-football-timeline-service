@@ -25,14 +25,19 @@ class TimelineService(
         setActivity(requesterId)
 
         return if (userIsActive) timelineRepository.findById(requesterId).orElse(Timeline(requesterId, emptyList()))
-        else requestTimeline(requesterId)
+        else requestTimelineFromPostService(requesterId)
+    }
+
+    fun getLatestTimeline(requesterId: String): Timeline {
+        setActivity(requesterId)
+        return requestTimelineFromPostService(requesterId)
     }
 
     private fun setActivity(userId: String) {
-        redisTemplate.opsForValue().set(userId, userId, Duration.of(10, ChronoUnit.SECONDS))
+        redisTemplate.opsForValue().set(userId, userId, Duration.of(1, ChronoUnit.MINUTES))
     }
 
-    fun requestTimeline(requesterId: String): Timeline {
+    private fun requestTimelineFromPostService(requesterId: String): Timeline {
         val response = rabbitTemplate.convertSendAndReceive(
             MessagingConfig.EXCHANGE,
             MessagingConfig.SENDER_ROUTING_KEY,
