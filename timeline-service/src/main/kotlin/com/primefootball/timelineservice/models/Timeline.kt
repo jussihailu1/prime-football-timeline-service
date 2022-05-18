@@ -1,6 +1,5 @@
 package com.primefootball.timelineservice.models
 
-import lombok.NoArgsConstructor
 import org.springframework.data.redis.core.RedisHash
 
 @RedisHash("timeline")

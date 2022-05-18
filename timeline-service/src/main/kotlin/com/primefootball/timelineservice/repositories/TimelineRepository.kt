@@ -6,4 +6,4 @@ import org.springframework.stereotype.Repository
 
 
 @Repository
-public interface TimelineRepository : CrudRepository<Timeline, String> {}
+interface TimelineRepository : CrudRepository<Timeline, String>

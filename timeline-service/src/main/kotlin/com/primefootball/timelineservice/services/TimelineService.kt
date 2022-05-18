@@ -45,15 +45,14 @@ class TimelineService(
         )
 
         val json = gson.fromJson(response.toString(), Array<Post>::class.java)
-        var listOfPosts = emptyList<Post>()
+        val listOfPosts = emptyList<Post>().toMutableList()
         json.map { post -> listOfPosts += post }
 
         return Timeline(requesterId, listOfPosts)
     }
 
     private fun refreshCache() {
-        // Every X seconds, do
-//        messageBrokerStuff()
+        // Every X minute, refresh timeline
     }
 }
 

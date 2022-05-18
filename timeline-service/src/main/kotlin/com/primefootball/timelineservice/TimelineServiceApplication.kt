@@ -7,7 +7,6 @@ import org.springframework.data.redis.connection.jedis.JedisConnectionFactory
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.amqp.rabbit.connection.ConnectionFactory
 import org.springframework.amqp.rabbit.core.RabbitTemplate
-import org.springframework.data.redis.connection.RedisStandaloneConfiguration
 
 
 @SpringBootApplication
@@ -18,7 +17,6 @@ fun main(args: Array<String>) {
 
     @Bean
     fun jedisConnectionFactory(): JedisConnectionFactory {
-//		val config = RedisStandaloneConfiguration("192.168.178.128", 6379)
         return JedisConnectionFactory()
     }
 
