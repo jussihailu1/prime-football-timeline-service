@@ -10,6 +10,7 @@ import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Service
 import java.time.Duration
 import java.time.temporal.ChronoUnit
+import java.util.*
 
 
 @Service
@@ -20,24 +21,24 @@ class TimelineService(
 ) {
     var gson = Gson()
 
-    fun getTimeline(requesterId: String): Timeline {
-        val userIsActive = redisTemplate.hasKey(requesterId)
+    fun getTimeline(requesterId: UUID): Timeline {
+        val userIsActive = redisTemplate.hasKey(requesterId.toString())
         setActivity(requesterId)
 
         return if (userIsActive) timelineRepository.findById(requesterId).orElse(Timeline(requesterId, emptyList()))
         else requestTimelineFromPostService(requesterId)
     }
 
-    fun getLatestTimeline(requesterId: String): Timeline {
+    fun getLatestTimeline(requesterId: UUID): Timeline {
         setActivity(requesterId)
         return requestTimelineFromPostService(requesterId)
     }
 
-    private fun setActivity(userId: String) {
-        redisTemplate.opsForValue().set(userId, userId, Duration.of(1, ChronoUnit.MINUTES))
+    private fun setActivity(userId: UUID) {
+        redisTemplate.opsForValue().set(userId.toString(), userId.toString(), Duration.of(1, ChronoUnit.HOURS))
     }
 
-    private fun requestTimelineFromPostService(requesterId: String): Timeline {
+    private fun requestTimelineFromPostService(requesterId: UUID): Timeline {
         val response = rabbitTemplate.convertSendAndReceive(
             MessagingConfig.EXCHANGE,
             MessagingConfig.SENDER_ROUTING_KEY,
@@ -48,11 +49,12 @@ class TimelineService(
         val listOfPosts = emptyList<Post>().toMutableList()
         json.map { post -> listOfPosts += post }
 
-        return Timeline(requesterId, listOfPosts)
+        return timelineRepository.save(Timeline(requesterId, listOfPosts))
     }
 
-    private fun refreshCache() {
-        // Every X minute, refresh timeline
-    }
+//    private fun refreshCache(requesterId: UUID) {
+//        // Every X minutes, refresh timeline
+//         requestTimelineFromPostService(requesterId)
+//    }
 }
 

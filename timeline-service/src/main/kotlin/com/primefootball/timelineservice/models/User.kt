@@ -1,7 +1,10 @@
 package com.primefootball.timelineservice.models
 
-open class User(
-    open var id: String,
-    open var userName: String,
-    open var profileImage: String
-)
+import java.io.Serializable
+import java.util.*
+
+data class User(
+    val id: UUID,
+    val userName: String = "some username",
+    val profileImage: String = "some profile image"
+) : Serializable

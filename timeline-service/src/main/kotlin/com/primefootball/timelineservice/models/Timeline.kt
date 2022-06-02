@@ -1,9 +1,11 @@
 package com.primefootball.timelineservice.models
 
 import org.springframework.data.redis.core.RedisHash
+import java.io.Serializable
+import java.util.*
 
 @RedisHash("timeline")
 open class Timeline(
-    open var id: String, // This is also the user's id to which this timeline belongs
-    open var posts: List<Post>,
-)
+    open val id: UUID, // This is also the user's id to which this timeline belongs
+    open val posts: List<Post>,
+) : Serializable

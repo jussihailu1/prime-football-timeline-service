@@ -1,9 +1,12 @@
 package com.primefootball.timelineservice.models
 
-open class Post(
-    open var id: String,
-    open var text: String,
-    open var file: String,
-    open var user: User,
-    open var timeStamp: String
-)
+import java.io.Serializable
+import java.util.*
+
+class Post(
+    val id: UUID,
+    val text: String,
+    val file: String,
+    val user: User,
+    val timeStamp: String = "some timestamp"
+) : Serializable
