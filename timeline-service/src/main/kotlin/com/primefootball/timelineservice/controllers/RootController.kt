@@ -9,5 +9,5 @@ import java.util.*
 @RequestMapping("/hello-timeline")
 class RootController() {
     @GetMapping()
-    fun getTimeline(@PathVariable requesterId: UUID): String = "Prime Football Timeline-service"
+    fun root(): String = "Prime Football Timeline-service"
 }
