@@ -22,7 +22,7 @@ class MessagingConfig {
 
     @Bean
     fun binding(queue: Queue?, exchange: TopicExchange?): Binding {
-        return BindingBuilder.bind(queue).to(exchange).with(SENDER_ROUTING_KEY)
+        return BindingBuilder.bind(queue).to(exchange).with(ROUTING_KEY)
     }
 
     @Bean
@@ -40,6 +40,6 @@ class MessagingConfig {
     companion object {
         const val SENDER_QUEUE = "prime-football-sender-queue"
         const val EXCHANGE = "prime-football-exchange"
-        const val SENDER_ROUTING_KEY = "prime-football-routing-key"
+        const val ROUTING_KEY = "prime-football-routing-key"
     }
 }

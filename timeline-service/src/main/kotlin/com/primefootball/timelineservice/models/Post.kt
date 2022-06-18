@@ -8,5 +8,5 @@ class Post(
     val text: String,
     val file: String,
     val user: User,
-    val timeStamp: String = "some timestamp"
+    val timestamp: String
 ) : Serializable

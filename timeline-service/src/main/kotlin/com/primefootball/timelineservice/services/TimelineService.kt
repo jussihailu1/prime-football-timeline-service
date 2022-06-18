@@ -4,6 +4,7 @@ import com.google.gson.Gson
 import com.primefootball.timelineservice.messaging.MessagingConfig
 import com.primefootball.timelineservice.models.Post
 import com.primefootball.timelineservice.models.Timeline
+import com.primefootball.timelineservice.models.User
 import com.primefootball.timelineservice.repositories.TimelineRepository
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.data.redis.core.RedisTemplate
@@ -19,14 +20,16 @@ class TimelineService(
     private val redisTemplate: RedisTemplate<String, String>,
     private val rabbitTemplate: RabbitTemplate
 ) {
-    var gson = Gson()
+    private var gson = Gson()
 
     fun getTimeline(requesterId: UUID): Timeline {
         val userIsActive = redisTemplate.hasKey(requesterId.toString())
-        setActivity(requesterId)
 
-        return if (userIsActive) timelineRepository.findById(requesterId).orElse(Timeline(requesterId, emptyList()))
-        else requestTimelineFromPostService(requesterId)
+        return if (userIsActive) {
+            setActivity(requesterId)
+            println("cached timeline")
+            timelineRepository.findById(requesterId).orElse(Timeline(requesterId, emptyList()));
+        } else requestTimelineFromPostService(requesterId)
     }
 
     fun getLatestTimeline(requesterId: UUID): Timeline {
@@ -39,17 +42,24 @@ class TimelineService(
     }
 
     private fun requestTimelineFromPostService(requesterId: UUID): Timeline {
+        println("latest timeline")
         val response = rabbitTemplate.convertSendAndReceive(
             MessagingConfig.EXCHANGE,
-            MessagingConfig.SENDER_ROUTING_KEY,
+            MessagingConfig.ROUTING_KEY,
             requesterId
         )
 
         val json = gson.fromJson(response.toString(), Array<Post>::class.java)
         val listOfPosts = emptyList<Post>().toMutableList()
-        json.map { post -> listOfPosts += post }
+        json.map { post -> listOfPosts += setUserAndReturnPost(post) }
 
         return timelineRepository.save(Timeline(requesterId, listOfPosts))
+    }
+
+    private fun setUserAndReturnPost(post: Post): Post{
+        post.user.username = "some username"
+        post.user.profileImage = "some profile image"
+        return post
     }
 
 //    private fun refreshCache(requesterId: UUID) {

@@ -5,6 +5,6 @@ import java.util.*
 
 data class User(
     val id: UUID,
-    val userName: String = "some username",
-    val profileImage: String = "some profile image"
+    var username: String,
+    var profileImage: String,
 ) : Serializable
